@@ -7,9 +7,9 @@
 	<script type="text/javascript" src="assets/jquery.min.js"></script>
 	<script type="text/javascript">
 		$(function () {
-			var start = {lon:13.435, lat:52.51};
-			var startTime = 86400*1.5;
-			var end = {lon:11.6, lat:48.1};
+			var start = {lon:13.37, lat:52.525};
+			var startTime;
+			var end = {lon:11.56, lat:48.14};
 			var speed = 3/3600;
 			var transfer = 10*60;
 			var width = 400;
@@ -43,7 +43,12 @@
 					});
 				})
 
+				startTime = Date.now() - (new Date(d.start_date));
+				startTime = startTime/1000 + 2*3600;
+				//console.log(startTime);
+
 				route();
+				setTimeout(route,50);
 
 				function oa2ao(obj) {
 					var keys = Object.keys(obj);
@@ -168,12 +173,12 @@
 					var startTime = step.start ? fmtTime(step.start) : '';
 					var   endTime = step.end   ? fmtTime(step.end) : '';
 					html.push([
-						'<tr><td>'+startTime+'</td><td>'+endTime+'</td><td>'+step.text+'</td><td class="right">'+duration+'</td></tr>'
+						'<tr><td>'+startTime+'</td><td>'+endTime+'</td><td class="text">'+step.text+'</td><td>'+duration+'</td></tr>'
 					].join(''));
 					if (step.points) path = path.concat(step.points);
 				})
 				html.push('</table>');
-				html.join('');
+				html = html.join('');
 				$('#output').html(html);
 				
 				draw(path);
@@ -251,14 +256,22 @@
 				right: 0px;
 				float: left;
 				font-family: Fira Sans;
-				font-size: 12px;
+				font-size: 10px;
 			}
 
 				#output table {
 					font-size: 14px;
+					line-height: 1em;
 				}
-				.right {
+
+				#output td {
+					padding: 2px 3px;
 					text-align: right;
+					border-bottom: 1px solid #eee;
+				}
+				#output td.text {
+					text-align: left;
+					font-weight: bold;
 				}
 	</style>
 </head>
