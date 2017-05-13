@@ -17,9 +17,9 @@ function GTFS(path) {
 		if (table) data[format.id] = table;
 	})
 
-	me.extract = function (startDate, endDate) {
+	me.extract = function (startDate) {
 		var startDay = date2days(startDate);
-		var endDay   = date2days(endDate);
+		var endDay   = startDay+7;
 
 		// init routes
 		var routes = new Map();
@@ -145,7 +145,6 @@ function GTFS(path) {
 
 		var result = {
 			start_date: startDate,
-			end_date: endDate,
 			stops: ao2oa(stops),
 			routes: ao2oa(routes),
 			services: ao2oa(services),
