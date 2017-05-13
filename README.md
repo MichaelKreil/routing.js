@@ -21,7 +21,7 @@ Loosely based on <http://i11www.iti.kit.edu/extra/publications/dpsw-isftr-13.pdf
 4. When all stations are checked, find the station with the fastest trip.
 
 ## demo
-Check the online demo <https://michaelkreil.github.io/routing.js/>
+Check the online demo <https://michaelkreil.github.io/routing.js/>  
 There is also a recording of the presentation @dbhackathon: https://www.youtube.com/watch?v=m5EJirC48i4
 
 ## conclusion
