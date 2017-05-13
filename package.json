@@ -1,16 +1,17 @@
 {
   "name": "routing.js",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "GTFS routing in the browser #dbhackathon",
+  "main": "bin/extract.js",
   "bin": {
-    "routing.js": "1_clean_gtfs.js"
+    "routing.js": "extract.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Michael Kreil",
+  "license": "MIT",
+  "private": true,
   "dependencies": {
     "colors": "^1.1.2"
   }
