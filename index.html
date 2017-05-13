@@ -83,12 +83,15 @@
 					stop.startDistance = Math.sqrt(sqr((start.lon-stop.lon)*71.6) + sqr((start.lat-stop.lat)*111.3));
 					stop.endDistance   = Math.sqrt(sqr((  end.lon-stop.lon)*71.6) + sqr((  end.lat-stop.lat)*111.3));
 					stop.endDuration   = stop.endDistance/speed;
+					var duration = stop.startDistance/speed;
 
-					var time = startTime + stop.startDistance/speed + transfer;
+					var time = startTime + duration + transfer;
 					stop.arr = {time:time, history:[{
 						text:'walk to '+stop.name,
-						duration: stop.startDistance/speed,
-						points: [start,stop]
+						duration: duration,
+						points: [start,stop],
+						start:startTime,
+						end:startTime + duration
 					}]}
 				})
 
@@ -126,7 +129,9 @@
 									stop.arr.history.push({
 										text: 'train '+trip.route.name+' to '+stop.name,
 										duration: trip.stopArr[i] - trip.stopDep[index],
-										points:points
+										points:points,
+										start:trip.stopDep[index]+offset,
+										end:  trip.stopArr[i]+offset,
 									})
 								}
 							}
@@ -141,7 +146,8 @@
 					stop.arr.history.push({
 						text:'walk to destination',
 						duration:stop.endDuration,
-						points:[stop,end]
+						points:[stop,end],
+						end:stop.arr.time
 					});
 					if (bestTime > stop.arr.time) {
 						bestTime = stop.arr.time;
@@ -159,8 +165,10 @@
 				bestStop.arr.history.forEach(function (step) {
 					var duration = step.duration;
 					duration = Math.ceil(duration/60).toFixed(0)+' Min';
+					var startTime = step.start ? fmtTime(step.start) : '';
+					var   endTime = step.end   ? fmtTime(step.end) : '';
 					html.push([
-						'<tr><td></td><td></td><td>'+step.text+'</td><td class="right">'+duration+'</td></tr>'
+						'<tr><td>'+startTime+'</td><td>'+endTime+'</td><td>'+step.text+'</td><td class="right">'+duration+'</td></tr>'
 					].join(''));
 					if (step.points) path = path.concat(step.points);
 				})
@@ -169,6 +177,15 @@
 				$('#output').html(html);
 				
 				draw(path);
+				function fmtTime(t) {
+					t = t % 86400;
+					var s = (t % 60).toFixed(0);
+					t = Math.floor(t/60);
+					var m = (t % 60).toFixed(0);
+					t = Math.floor(t/60);
+					var h = (t % 24).toFixed(0);
+					return h+':'+('00'+m).slice(-2)
+				}
 			}
 
 			function draw(path) {
