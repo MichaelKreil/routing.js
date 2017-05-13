@@ -1,0 +1,4 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang
+DPN,DPN,http://www.bahn.de,Europe/Berlin,de
+SBB,SBB,http://www.bahn.de,Europe/Berlin,de
+CFL,CFL,http://www.bahn.de,Europe/Berlin,de

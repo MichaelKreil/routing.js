@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date
+"DB-to-GTFS converter, based on DB-API data",http://www.patrickbrosi.de/de/dbgtfs,de,20161211,20171210

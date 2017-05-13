@@ -1,5 +1,4 @@
 
 bin/gtfs.json
 bin/gtfs_pretty.json
-gtfs/
 node_modules/
