@@ -45,7 +45,7 @@
 
 				startTime = Date.now() - (new Date(d.start_date));
 				startTime = startTime/1000 + 2*3600;
-				//console.log(startTime);
+				startTime = startTime % (86400*7) // quick fix, if only old data is available
 
 				route();
 				setTimeout(route,50);
@@ -65,10 +65,15 @@
 
 			var drag = false;
 			canvas.mousedown(function (e) { drag = true; click(e) })
+			canvas.on('touchstart', function (e) { drag = true; click(e.touches[0]); e.preventDefault() })
 			canvas.mouseup(  function (e) { drag = false; })
-			canvas.mousemove(function (e) { if (drag) click(e)	})
+			canvas.mousemove(function (e) { if (drag !== false) click(e) })
+			canvas.on('touchmove', function (e) { click(e.touches[0]); e.preventDefault() })
 			function click(e) {
-				end = unproject(e.offsetX*2, e.offsetY*2);
+				var offset = {x:0,y:0};
+				var scale = width/canvas.width();
+				point = unproject((e.pageX - offset.x)*scale, (e.pageY - offset.y)*scale);
+				if (e.shiftKey) start = point; else end = point;
 				route();
 			}
 
@@ -239,6 +244,10 @@
 		})
 	</script>
 	<style type="text/css">
+		body {
+			margin: 0px;
+		}
+
 		#wrapper {
 			position: relative;
 			height: 600px,
@@ -248,6 +257,8 @@
 				top: 0px;
 				left: 0px;
 				cursor: pointer;
+				width: 400px;
+				height: 600px;
 			}
 			#output {
 				position: absolute;
@@ -255,8 +266,10 @@
 				left: 400px;
 				right: 0px;
 				float: left;
-				font-family: Fira Sans;
+				font-family: "Fira Sans", Helvetica, sans-serif;
 				font-size: 10px;
+				box-sizing: border-box;
+				padding: 8px;
 			}
 
 				#output table {
@@ -273,11 +286,22 @@
 					text-align: left;
 					font-weight: bold;
 				}
+		@media (max-width:700px) {
+			#canvas {
+				width: 100vw;
+				height: 150vw;
+			}
+			#output {
+				left: 0px;
+				top: 150vw;
+				padding-bottom: 100px;
+			}
+		}
 	</style>
 </head>
 <body>
 	<div id="wrapper">
-		<canvas id="canvas" width="800" height="1200" style="width: 400px;height: 600px"></canvas>
+		<canvas id="canvas" width="800" height="1200"></canvas>
 		<div id="output"></div>
 	</div>
 </body>
