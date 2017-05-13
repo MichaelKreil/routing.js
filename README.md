@@ -14,6 +14,7 @@
 - web/index.html is where the magic happens. I hacked that in 3 additional hours the next day.
 
 ## algorithm
+Loosely based on <http://i11www.iti.kit.edu/extra/publications/dpsw-isftr-13.pdf>
 1. Calculate the distance from starting point to every train station and estimate the duration to walk there (3 km/h)
 2. Find the nearest station and use it's timetable to calculate all possible trips to other stations.
 3. Mark that station as "checked", find the next nearest station (that's not checked) and continue with step 2.
