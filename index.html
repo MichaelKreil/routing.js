@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<script type="text/javascript" src="assets/jquery.min.js"></script>
+	<script type="text/javascript">
+		$(function () {
+			var start = {lon:13.4, lat:52.5};
+			var startTime = 86400*1.5;
+			var end = {lon:11.6, lat:48.1};
+			var speed = 3/3600;
+			var transfer = 10*60;
+			var data;
+
+			$.getJSON('gtfs.json', function (d) {
+				data = d;
+				d.routes = oa2ao(d.routes);
+				d.services = oa2ao(d.services);
+				d.stops = oa2ao(d.stops);
+				d.trips = oa2ao(d.trips);
+
+				d.stops.forEach(function (stop) {
+					stop.trips = [];
+				})
+
+				d.trips.forEach(function (trip) {
+					trip.route = d.routes[trip.route];
+					trip.service = d.services[trip.service];
+					trip.dates = trip.service.dates;
+					trip.stops = trip.stops.map(function (stop_index, index) {
+						var stop = d.stops[stop_index];
+						stop.trips.push([trip,index]);
+						return stop;
+					});
+				})
+
+				route();
+
+				function oa2ao(obj) {
+					var keys = Object.keys(obj);
+					var length = obj[keys[0]].length;
+					var array = new Array(length);
+					for (var i = 0; i < length; i++) {
+						var entry = {};
+						keys.forEach(key => entry[key] = obj[key][i]);
+						array[i] = entry;
+					}
+					return array;
+				}
+			})
+
+			function route() {
+				var endTime = startTime+86400;
+
+				data.stops.forEach(function (stop) {
+					stop.arr = [];
+					stop.checked = false;
+				})
+
+				//console.log(data);
+
+				data.stops.forEach(function (stop) {
+					stop.startDistance = Math.sqrt(sqr((start.lon-stop.lon)*71.6) + sqr((start.lat-stop.lat)*111.3));
+					stop.endDistance   = Math.sqrt(sqr((  end.lon-stop.lon)*71.6) + sqr((  end.lat-stop.lat)*111.3));
+					stop.endDuration   = stop.endDistance/speed;
+
+					var time = startTime + stop.startDistance/speed + transfer;
+					stop.arr = {time:time, history:[{
+						text:'walk to '+stop.name,
+						duration: stop.startDistance/speed
+					}]}
+				})
+
+				while (true) {
+					var checkStop = false, minTime = 1e10;
+					data.stops.forEach(function (stop) {
+						if (stop.checked) return;
+						if (minTime > stop.arr.time) {
+							minTime = stop.arr.time;
+							checkStop = stop;
+						}
+					})
+					if (!checkStop) break;
+
+					checkStop.trips.forEach(function (entry) {
+						var trip = entry[0];
+						var index = entry[1];
+						trip.dates.forEach(function (date) {
+							var offset = date*86400;
+							var depTime = offset + trip.stopDep[index];
+							if (depTime > endTime) return;
+							if (depTime < minTime) return;
+							for (var i = index+1; i < trip.stopDep.length; i++) {
+								var stop = trip.stops[i];
+								var arrTime =  offset+trip.stopArr[i]+transfer;
+								if (arrTime < stop.arr.time) {
+									stop.arr.time = arrTime;
+									stop.arr.history = checkStop.arr.history.slice(0)
+									stop.arr.history.push({
+										text: 'wait',
+										duration: (trip.stopDep[index]+offset) - checkStop.arr.time + transfer
+									})
+									stop.arr.history.push({
+										text: 'train '+trip.route.name+' to '+stop.name,
+										duration: trip.stopArr[i] - trip.stopDep[index]
+									})
+								}
+							}
+						})
+					})
+					checkStop.checked = true;
+				}
+
+				var bestTime = 1e10, bestStop = false;
+				data.stops.forEach(function (stop) {
+					stop.arr.time += stop.endDuration;
+					stop.arr.history.push({
+						text:'walk to destination',
+						duration:stop.endDuration
+					});
+					if (bestTime > stop.arr.time) {
+						bestTime = stop.arr.time;
+						bestStop = stop;
+					}
+				})
+
+				var html = ['<table>'];
+				bestStop.arr.history.forEach(function (step) {
+					var duration = step.duration;
+					duration = Math.ceil(duration/60).toFixed(0)+' Min';
+					html.push([
+						'<tr><td></td><td></td><td>'+step.text+'</td><td class="right">'+duration+'</td></tr>'
+					].join(''));
+				})
+				html.push('</table>');
+				html = html.join('');
+				$('#output').html(html);
+				//console.log(data.stops.filter(function (stop) { return stop.name.indexOf('München') >= 0 }).map(function (stop) { return stop.arr.history.map(function (h) { return h.text }).join(', ') }).join('\n'))
+			}
+
+			function sqr(v) { return v*v }
+		})
+	</script>
+	<style type="text/css">
+		#wrapper {
+			position: relative;
+			height: 600px,
+		}
+			#canvas {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+			}
+			#output {
+				position: absolute;
+				top: 0px;
+				left: 400px;
+				right: 0px;
+				float: left;
+				font-family: Fira Sans;
+				font-size: 14px;
+			}
+				.right {
+					text-align: right;
+				}
+	</style>
+</head>
+<body>
+	<div id="wrapper">
+		<canvas id="canvas" width="400" height="600"></canvas>
+		<div id="output"></div>
+	</div>
+</body>
+</html>
