@@ -68,7 +68,7 @@
 			canvas.mouseup(  function (e) { drag = false; })
 			canvas.mousemove(function (e) { if (drag) click(e)	})
 			function click(e) {
-				end = unproject(e.clientX*2, e.clientY*2);
+				end = unproject(e.offsetX*2, e.offsetY*2);
 				route();
 			}
 
