@@ -5,6 +5,8 @@
 - everything in JavaScript
 - made at #dbhackathon
 
+<p align="center"><img src="https://github.com/MichaelKreil/routing.js/raw/master/routing.js.gif"/></p>
+
 ## preprocessing
 - bin/extract.js uses a simple GTFS lib to parse GTFS, extract a chunk of 7 days and store the necessary data in a small JSON
 - bin/lib/gtfs.js is this simple GTFS lib. I hacked it in 3 hours ... so sorry, no comments, yet.
