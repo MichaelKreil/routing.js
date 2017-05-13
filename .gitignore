@@ -1,0 +1,5 @@
+
+bin/gtfs.json
+bin/gtfs.json.gz
+gtfs/
+node_modules/
