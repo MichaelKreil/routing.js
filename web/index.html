@@ -12,11 +12,11 @@
 			var end = {lon:11.56, lat:48.14};
 			var speed = 3/3600;
 			var transfer = 10*60;
-			var width = 400;
-			var height = 600;
+			var width = 800;
+			var height = 1200;
 			var canvas = $('#canvas');
 			var ctx = canvas.get(0).getContext('2d');
-			var zoom = 60;
+			var zoom = 120;
 			var data;
 
 			$.getJSON('gtfs.json', function (d) {
@@ -68,7 +68,7 @@
 			canvas.mouseup(  function (e) { drag = false; })
 			canvas.mousemove(function (e) { if (drag) click(e)	})
 			function click(e) {
-				end = unproject(e.clientX, e.clientY);
+				end = unproject(e.clientX*2, e.clientY*2);
 				route();
 			}
 
@@ -199,16 +199,16 @@
 
 				ctx.fillStyle = '#888';
 				data.stops.forEach(function (stop) {
-					var r = Math.sqrt(stop.tripCount/300)+0.5;
+					var r = Math.sqrt(stop.tripCount/150)+1;
 					var p = project(stop);
 					
 					ctx.beginPath();
-					ctx.arc(p.x,p.y,r,0,Math.PI);
+					ctx.arc(p.x,p.y,r,0,2*Math.PI);
 					ctx.fill();
 				})
 
 				ctx.strokeStyle = '#d00';
-				ctx.lineWidth = 1;
+				ctx.lineWidth = 2;
 				ctx.beginPath();
 				path.forEach(function (point, index) {
 					var p = project(point);
@@ -277,7 +277,7 @@
 </head>
 <body>
 	<div id="wrapper">
-		<canvas id="canvas" width="400" height="600"></canvas>
+		<canvas id="canvas" width="800" height="1200" style="width: 400px;height: 600px"></canvas>
 		<div id="output"></div>
 	</div>
 </body>
