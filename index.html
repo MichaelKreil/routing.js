@@ -7,11 +7,16 @@
 	<script type="text/javascript" src="assets/jquery.min.js"></script>
 	<script type="text/javascript">
 		$(function () {
-			var start = {lon:13.4, lat:52.5};
+			var start = {lon:13.435, lat:52.51};
 			var startTime = 86400*1.5;
 			var end = {lon:11.6, lat:48.1};
 			var speed = 3/3600;
 			var transfer = 10*60;
+			var width = 400;
+			var height = 600;
+			var canvas = $('#canvas');
+			var ctx = canvas.get(0).getContext('2d');
+			var zoom = 60;
 			var data;
 
 			$.getJSON('gtfs.json', function (d) {
@@ -23,6 +28,7 @@
 
 				d.stops.forEach(function (stop) {
 					stop.trips = [];
+					stop.tripCount = 0;
 				})
 
 				d.trips.forEach(function (trip) {
@@ -32,6 +38,7 @@
 					trip.stops = trip.stops.map(function (stop_index, index) {
 						var stop = d.stops[stop_index];
 						stop.trips.push([trip,index]);
+						stop.tripCount += trip.dates.length;
 						return stop;
 					});
 				})
@@ -51,7 +58,18 @@
 				}
 			})
 
+			var drag = false;
+			canvas.mousedown(function (e) { drag = true; click(e) })
+			canvas.mouseup(  function (e) { drag = false; })
+			canvas.mousemove(function (e) { if (drag) click(e)	})
+			function click(e) {
+				end = unproject(e.clientX, e.clientY);
+				route();
+			}
+
 			function route() {
+				var performanceStart = new Date();
+
 				var endTime = startTime+86400;
 
 				data.stops.forEach(function (stop) {
@@ -69,7 +87,8 @@
 					var time = startTime + stop.startDistance/speed + transfer;
 					stop.arr = {time:time, history:[{
 						text:'walk to '+stop.name,
-						duration: stop.startDistance/speed
+						duration: stop.startDistance/speed,
+						points: [start,stop]
 					}]}
 				})
 
@@ -100,11 +119,14 @@
 									stop.arr.history = checkStop.arr.history.slice(0)
 									stop.arr.history.push({
 										text: 'wait',
-										duration: (trip.stopDep[index]+offset) - checkStop.arr.time + transfer
+										duration: (trip.stopDep[index]+offset) - checkStop.arr.time + transfer,
 									})
+									points = [];
+									for (var j = index; j <= i; j++) points.push(trip.stops[j]);
 									stop.arr.history.push({
 										text: 'train '+trip.route.name+' to '+stop.name,
-										duration: trip.stopArr[i] - trip.stopDep[index]
+										duration: trip.stopArr[i] - trip.stopDep[index],
+										points:points
 									})
 								}
 							}
@@ -118,7 +140,8 @@
 					stop.arr.time += stop.endDuration;
 					stop.arr.history.push({
 						text:'walk to destination',
-						duration:stop.endDuration
+						duration:stop.endDuration,
+						points:[stop,end]
 					});
 					if (bestTime > stop.arr.time) {
 						bestTime = stop.arr.time;
@@ -126,18 +149,68 @@
 					}
 				})
 
-				var html = ['<table>'];
+				var performanceDuration = (new Date()) - performanceStart;
+
+				var html = [
+					'<p>Found route in <b>'+performanceDuration+' ms</b></p>',
+					'<table>'
+				];
+				var path = [];
 				bestStop.arr.history.forEach(function (step) {
 					var duration = step.duration;
 					duration = Math.ceil(duration/60).toFixed(0)+' Min';
 					html.push([
 						'<tr><td></td><td></td><td>'+step.text+'</td><td class="right">'+duration+'</td></tr>'
 					].join(''));
+					if (step.points) path = path.concat(step.points);
 				})
 				html.push('</table>');
-				html = html.join('');
+				html.join('');
 				$('#output').html(html);
-				//console.log(data.stops.filter(function (stop) { return stop.name.indexOf('München') >= 0 }).map(function (stop) { return stop.arr.history.map(function (h) { return h.text }).join(', ') }).join('\n'))
+				
+				draw(path);
+			}
+
+			function draw(path) {
+				ctx.fillStyle = '#fff';
+				ctx.fillRect(0,0,width,height);
+
+				ctx.fillStyle = '#888';
+				data.stops.forEach(function (stop) {
+					var r = Math.sqrt(stop.tripCount/300)+0.5;
+					var p = project(stop);
+					
+					ctx.beginPath();
+					ctx.arc(p.x,p.y,r,0,Math.PI);
+					ctx.fill();
+				})
+
+				ctx.strokeStyle = '#d00';
+				ctx.lineWidth = 1;
+				ctx.beginPath();
+				path.forEach(function (point, index) {
+					var p = project(point);
+					if (index === 0) {
+						ctx.moveTo(p.x,p.y);
+					} else {
+						ctx.lineTo(p.x,p.y);
+					}
+				})
+				ctx.stroke();
+			}
+
+			function project(p) {
+				return {
+					x: +(p.lon-10)*0.63*zoom + width/2,
+					y: -(p.lat-51)*1.00*zoom + height/2
+				}
+			}
+
+			function unproject(x,y) {
+				return {
+					lon:10 + (x - width/2 )/(0.63*zoom),
+					lat:51 - (y - height/2)/(1.00*zoom)
+				}
 			}
 
 			function sqr(v) { return v*v }
@@ -152,6 +225,7 @@
 				position: absolute;
 				top: 0px;
 				left: 0px;
+				cursor: pointer;
 			}
 			#output {
 				position: absolute;
@@ -160,8 +234,12 @@
 				right: 0px;
 				float: left;
 				font-family: Fira Sans;
-				font-size: 14px;
+				font-size: 12px;
 			}
+
+				#output table {
+					font-size: 14px;
+				}
 				.right {
 					text-align: right;
 				}
