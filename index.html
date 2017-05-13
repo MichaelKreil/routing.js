@@ -69,8 +69,9 @@
 			canvas.mouseup(  function (e) { drag = false; })
 			canvas.mousemove(function (e) { if (drag !== false) click(e) })
 			canvas.on('touchmove', function (e) { click(e.touches[0]); e.preventDefault() })
+
 			function click(e) {
-				var offset = {x:0,y:0};
+				var offset = {x:0,y:canvas.offset().top};
 				var scale = width/canvas.width();
 				point = unproject((e.pageX - offset.x)*scale, (e.pageY - offset.y)*scale);
 				if (e.shiftKey) start = point; else end = point;
@@ -246,6 +247,8 @@
 	<style type="text/css">
 		body {
 			margin: 0px;
+			font-family: "Fira Sans", Helvetica, sans-serif;
+			font-size: 10px;
 		}
 
 		#wrapper {
@@ -266,10 +269,9 @@
 				left: 400px;
 				right: 0px;
 				float: left;
-				font-family: "Fira Sans", Helvetica, sans-serif;
-				font-size: 10px;
 				box-sizing: border-box;
 				padding: 8px;
+				clear: both;
 			}
 
 				#output table {
@@ -286,6 +288,12 @@
 					text-align: left;
 					font-weight: bold;
 				}
+				#header {
+					text-align: center;
+				}
+					#header a {
+						color: #aaa;
+					}
 		@media (max-width:700px) {
 			#canvas {
 				width: 100vw;
@@ -300,6 +308,7 @@
 	</style>
 </head>
 <body>
+	<div id="header"><a href="https://github.com/MichaelKreil/routing.js" target="_blank">You can fork routing.js on GitHub</a></div>
 	<div id="wrapper">
 		<canvas id="canvas" width="800" height="1200"></canvas>
 		<div id="output"></div>
