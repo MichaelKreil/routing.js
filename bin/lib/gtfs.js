@@ -26,7 +26,6 @@ function GTFS(path) {
 		data.routes.forEach(r => {
 			routes.set(r.route_id, {
 				name: r.route_short_name.length > 0 ? r.route_short_name : r.route_long_name,
-				type: r.route_type,
 				trips: []
 			})
 		})
