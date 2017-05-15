@@ -1,9 +1,10 @@
 # routing.js
 - GTFS routing in the browser
 - also works offline!
-- small (< 100 KB, including all data) and extremely fast (10-20 ms)
+- small (62 KB data for all long-distance connections) and extremely fast (10-20 ms)
 - everything in JavaScript
 - made at #dbhackathon
+- uses GTFS from: <https://github.com/fredlockheed/db-fv-gtfs>
 
 <p align="center"><img src="https://github.com/MichaelKreil/routing.js/raw/master/routing.js.gif"/></p>
 
